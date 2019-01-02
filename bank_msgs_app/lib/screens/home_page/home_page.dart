@@ -15,21 +15,21 @@ class HomePageState extends State<HomePage>{
 
   DatabaseHelper _databaseHelper = DatabaseHelper();
   Set<String> bnkSet;
-  Map<String,List<SmsMessage>> bnkMsgsMap = {
-    'BOI': List(),
-    'CANARA': List(),
-    'KVB': List(),
-    'HDFC': List(),
-    'AXIS': List(),
-  };
+  Map<String,List<SmsMessage>> bnkMsgsMap = Map();
 
   final SmsQuery _query = new SmsQuery();
-  List<SmsMessage> _messages = new List();
+
+  @override
+  void initState(){
+    super.initState();
+    _query.getAllSms;
+  }
 
   bool _loading = true;
   int count = 0;
 
   void updateBankList(){
+    
     final Future<Database> dbFuture = _databaseHelper.initializeDatabase();
     dbFuture.then((database){
 
@@ -74,12 +74,12 @@ class HomePageState extends State<HomePage>{
           child: Icon(Icons.refresh),
           tooltip: 'Scan New Messages',
           onPressed: () async{
-                int res = await _databaseHelper.delete();
-                print(res);
-                setState(() {              
-                    _loading = true; 
-                });
-                _query.querySms({'kind': [SmsQueryKind.Inbox]}).then(_getMsgs);
+                 _databaseHelper.delete().then((res){                   
+                    setState(() {              
+                      _loading = true; 
+                    });
+                    _query.querySms({'kind': [SmsQueryKind.Inbox]}).then(_getMsgs);
+                 });
           },
         ),
       ),
@@ -103,13 +103,23 @@ class HomePageState extends State<HomePage>{
   }
 
   void _getMsgs(List<SmsMessage> messages) async{
+
+  List<SmsMessage> _messages = new List();
     _messages = messages;
+    print(_messages);
     if (_messages != null) {
-      mapMsgsToBankNames();
+      mapMsgsToBankNames(_messages);
     }
   }
 
-  void mapMsgsToBankNames(){
+  void mapMsgsToBankNames(List<SmsMessage> _messages){
+    bnkMsgsMap = {
+      'BOI': List(),
+      'CANARA': List(),
+      'KVB': List(),
+      'HDFC': List(),
+      'AXIS': List(),
+    };
     for (var i = 0; i < _messages.length; i++) {
       String msgAddress = _messages[i].address;
       SmsMessage msg = _messages[i];
@@ -122,7 +132,7 @@ class HomePageState extends State<HomePage>{
         bnkMsgsMap['KVB'].add(msg);
       }else if (msgAddress.endsWith("HDFCBK")) {
         bnkMsgsMap['HDFC'].add(msg);
-      }else if (msgAddress.endsWith("AXISBk")) {
+      }else if (msgAddress.endsWith("AxisBk")) {
         bnkMsgsMap['AXIS'].add(msg);
       }
     }
@@ -133,6 +143,7 @@ class HomePageState extends State<HomePage>{
     bnkMsgsMap.forEach((bnkName, msgs) async {     
 
       if(msgs.length != 0){
+        print(msgs.length);
       
       var currentMonth = DateTime.now().month;
       var prevMonth1 = previousMonth(currentMonth);
@@ -144,7 +155,8 @@ class HomePageState extends State<HomePage>{
       double debitedAmt1 = 0;
       double debitedAmt3 = 0;
       double debitedAmt2 = 0;
-
+      
+      int i = 0;
       RegExp expForCredit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*.*CREDITED", caseSensitive: false);
       RegExp expForCredit2 = RegExp(r"CREDITED.*(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*", caseSensitive: false);
       RegExp expForDebit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*.*DEBITED", caseSensitive: false);
@@ -212,6 +224,8 @@ class HomePageState extends State<HomePage>{
             creditedAmt3 += _getAmountFromString(string);
           }          
         }
+        // print("$i : $creditedAmt1 , $debitedAmt1");
+        print(msg.body);
       });
         BnkTransaction transMonth1 = BnkTransaction(bnkName,prevMonth1, debitedAmt1, creditedAmt1);
         BnkTransaction transMonth2 = BnkTransaction(bnkName,prevMonth2, debitedAmt2, creditedAmt2);
@@ -227,7 +241,7 @@ class HomePageState extends State<HomePage>{
   }
 
   double _getAmountFromString(String string){
-    RegExp exp = new RegExp(r"\d+\.\d+");
+    RegExp exp = new RegExp(r"\d+\.*\d*");
     double amount = double.parse(exp.stringMatch(string));
     return amount;
   }
