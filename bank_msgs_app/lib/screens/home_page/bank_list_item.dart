@@ -1,13 +1,23 @@
+import 'package:bank_msgs_app/screens/monthwise_transaction_page.dart';
 import 'package:flutter/material.dart';
 
 class BankListItem extends StatelessWidget{
-  String bnkName;
+  final String bnkName;
 
   BankListItem(this.bnkName);
 
   @override
   Widget build(BuildContext context){
-    return Padding(
+    return GestureDetector(
+      onTap: (){
+            Navigator.push(
+              context, 
+              MaterialPageRoute(builder: (context) => MonthWiseTransactionPage(bnkName)));
+            },
+      onDoubleTap: (){
+                
+            },
+      child: Padding(
           padding: EdgeInsets.all(10.0),
           child: Container(
             height: 50.0,
@@ -22,8 +32,7 @@ class BankListItem extends StatelessWidget{
                                       bottomRight: Radius.circular(10)
                             )
             ),
-            child:GestureDetector( 
-              child: Padding(
+            child: Padding(
               padding: EdgeInsets.only(left: 10.0, right: 10.0),
               child: Center(child:Text(
                                       bnkName,
@@ -31,14 +40,8 @@ class BankListItem extends StatelessWidget{
                                         fontSize: 20.0,
                                         color: Colors.teal[900]                                    
                                       ),
-              ))),
-              onTap: (){
-
-              },
-              onDoubleTap: (){
-                
-              },
-            )
-        ));
+            ))), 
+        )
+    ));
   }
 }

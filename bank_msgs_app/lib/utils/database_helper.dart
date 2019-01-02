@@ -83,9 +83,11 @@ class DatabaseHelper{
   //Query as per bank
     //Fetch map as per bank
     Future<List<Map<String,dynamic>>> _queryForABankMapList(String bnkName) async{
-    Database db = await this.database;
-    var result = await db.query(tableName, where: '$colBank = $bnkName', orderBy: '$colMonth DESC');
-    return result;
+      List<String> args = List();
+      args.add(bnkName);
+      Database db = await this.database;
+      var result = await db.query(tableName, where: '$colBank = ?', whereArgs: args, orderBy: '$colMonth DESC');
+      return result;
     }
     //get maplist from above function and convert into BnkTrasaction List
     Future<List<BnkTransaction>> getBnkTransactionListPerBank(String bnkName) async{

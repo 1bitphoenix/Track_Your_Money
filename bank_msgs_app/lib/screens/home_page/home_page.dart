@@ -113,7 +113,7 @@ class HomePageState extends State<HomePage>{
     for (var i = 0; i < _messages.length; i++) {
       String msgAddress = _messages[i].address;
       SmsMessage msg = _messages[i];
-       
+      print(msg);
       if (msgAddress.endsWith("BOIIND")) {
         bnkMsgsMap['BOI'].add(msg);
       }else if (msgAddress.endsWith("CANBNK")) {
@@ -130,7 +130,9 @@ class HomePageState extends State<HomePage>{
   }
 
   void makingTransactionObjects(){
-    bnkMsgsMap.forEach((bnkName, msgs) async {       
+    bnkMsgsMap.forEach((bnkName, msgs) async {     
+
+      if(msgs.length != 0){
       
       var currentMonth = DateTime.now().month;
       var prevMonth1 = previousMonth(currentMonth);
@@ -143,16 +145,13 @@ class HomePageState extends State<HomePage>{
       double debitedAmt3 = 0;
       double debitedAmt2 = 0;
 
-      bool flag = false;
-
-      RegExp expForCredit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.\d+.*CREDITED", caseSensitive: false);
-      RegExp expForCredit2 = RegExp(r"CREDITED.*(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.\d+", caseSensitive: false);
-      RegExp expForDebit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.\d+.*DEBITED", caseSensitive: false);
-      RegExp expForDebit2 = RegExp(r"DEBITED.*(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.\d+", caseSensitive: false);
-      RegExp expForDeposit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.\d+.*DEPOSTED", caseSensitive: false);
-      RegExp expForDeposit2 = RegExp(r"DEPOSITED.*(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.\d+", caseSensitive: false);
+      RegExp expForCredit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*.*CREDITED", caseSensitive: false);
+      RegExp expForCredit2 = RegExp(r"CREDITED.*(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*", caseSensitive: false);
+      RegExp expForDebit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*.*DEBITED", caseSensitive: false);
+      RegExp expForDebit2 = RegExp(r"DEBITED.*(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*", caseSensitive: false);
+      RegExp expForDeposit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*.*DEPOSTED", caseSensitive: false);
+      RegExp expForDeposit2 = RegExp(r"DEPOSITED.*(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*", caseSensitive: false);
       msgs.forEach((msg){
-        flag = true;
         if (expForCredit1.firstMatch(msg.body) != null) {
           var string = expForCredit1.stringMatch(msg.body);
           if (msg.date.month == prevMonth1) {
@@ -193,28 +192,27 @@ class HomePageState extends State<HomePage>{
             debitedAmt3 += _getAmountFromString(string);
           }          
         }
-        else if (expForDeposit2.firstMatch(msg.body) != null) {
-          var string = expForDeposit2.stringMatch(msg.body);
-          if (msg.date.month == prevMonth1) {
-            debitedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == prevMonth2){
-            debitedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == prevMonth3) {
-            debitedAmt3 += _getAmountFromString(string);
-          }          
-        }
         else if (expForDeposit1.firstMatch(msg.body) != null) {
           var string = expForDeposit1.stringMatch(msg.body);
           if (msg.date.month == prevMonth1) {
-            debitedAmt1 += _getAmountFromString(string);
+            creditedAmt1 += _getAmountFromString(string);
           }else if(msg.date.month == prevMonth2){
-            debitedAmt2 += _getAmountFromString(string);
+            creditedAmt2 += _getAmountFromString(string);
           }else if (msg.date.month == prevMonth3) {
-            debitedAmt3 += _getAmountFromString(string);
+            creditedAmt3 += _getAmountFromString(string);
+          }          
+        }
+        else if (expForDeposit2.firstMatch(msg.body) != null) {
+          var string = expForDeposit2.stringMatch(msg.body);
+          if (msg.date.month == prevMonth1) {
+            creditedAmt1 += _getAmountFromString(string);
+          }else if(msg.date.month == prevMonth2){
+            creditedAmt2 += _getAmountFromString(string);
+          }else if (msg.date.month == prevMonth3) {
+            creditedAmt3 += _getAmountFromString(string);
           }          
         }
       });
-      if(flag){
         BnkTransaction transMonth1 = BnkTransaction(bnkName,prevMonth1, debitedAmt1, creditedAmt1);
         BnkTransaction transMonth2 = BnkTransaction(bnkName,prevMonth2, debitedAmt2, creditedAmt2);
         BnkTransaction transMonth3 = BnkTransaction(bnkName,prevMonth3, debitedAmt3, creditedAmt3);
@@ -222,7 +220,8 @@ class HomePageState extends State<HomePage>{
         _databaseHelper.insert(transMonth1);
         _databaseHelper.insert(transMonth2);
         _databaseHelper.insert(transMonth3);
-      }
+      
+    }
     });
     updateBankList();
   }

@@ -24,6 +24,7 @@ dependencies:
   sqflite: any
   path_provider: any
   intl: ^0.15.7
+  flutter_circular_chart: ^0.1.0
 
 dev_dependencies:
   flutter_test:
