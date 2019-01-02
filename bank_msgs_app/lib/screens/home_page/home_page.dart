@@ -78,7 +78,7 @@ class HomePageState extends State<HomePage>{
                     setState(() {              
                       _loading = true; 
                     });
-                    _query.querySms({'kind': [SmsQueryKind.Inbox]}).then(_getMsgs);
+                    _query.querySms(kinds: [SmsQueryKind.Inbox]).then(_getMsgs);
                  });
           },
         ),
