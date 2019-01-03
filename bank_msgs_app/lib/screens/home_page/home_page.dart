@@ -19,12 +19,6 @@ class HomePageState extends State<HomePage>{
 
   final SmsQuery _query = new SmsQuery();
 
-  @override
-  void initState(){
-    super.initState();
-    _query.getAllSms;
-  }
-
   bool _loading = true;
   int count = 0;
 
@@ -59,7 +53,7 @@ class HomePageState extends State<HomePage>{
       home: Scaffold(
         appBar: AppBar(
           title: Text('Bank Messages'),
-          backgroundColor: Colors.teal[900],
+          backgroundColor: Colors.teal[700],
           actions: <Widget>[
              IconButton(
                icon: Icon(Icons.receipt),
@@ -70,7 +64,7 @@ class HomePageState extends State<HomePage>{
         ),
         body: _homePageWidgets(),
         floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.teal[900],
+          backgroundColor: Colors.teal[700],
           child: Icon(Icons.refresh),
           tooltip: 'Scan New Messages',
           onPressed: () async{
@@ -91,6 +85,25 @@ class HomePageState extends State<HomePage>{
         child: CircularProgressIndicator(),
       );
     }
+
+    if (bnkSet.isEmpty) {
+      return Align(
+        alignment: Alignment.center,
+        child: Container(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            "Looks Like, its empty here \n Click Refresh button to scan Transaction",
+            softWrap: true,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.blueGrey.withOpacity(0.5)
+            ),
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: EdgeInsets.fromLTRB(10.0, 20.0, 10.0, 20.0),
       child: GridView.count(

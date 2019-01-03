@@ -6,7 +6,7 @@ import 'package:sqflite/sqflite.dart';
 
 class MonthWiseTransactionPage extends StatefulWidget{
 
-  String bnkName;
+  final String bnkName;
   
   MonthWiseTransactionPage(this.bnkName);
 
@@ -32,6 +32,7 @@ class MonthWiseTransactionPageState extends State<MonthWiseTransactionPage>{
         setState(() {
           transactionList = bnkTransactionList;
           count = bnkTransactionList.length;
+          _loading = false;
         });
       });
     });
@@ -51,6 +52,8 @@ class MonthWiseTransactionPageState extends State<MonthWiseTransactionPage>{
     double height = size.height / 8;
     double width = size.width;
 
+    double aspectRatio = width/height;
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -64,17 +67,25 @@ class MonthWiseTransactionPageState extends State<MonthWiseTransactionPage>{
               },
           ),
         ),
-        body:Container(
+        body:_screenWidget(aspectRatio),
+      ),
+    );
+  }
+    Widget _screenWidget(double aspectRatio){
+    if (_loading) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );      
+    }
+    return Container(
           child: GridView.count(
             crossAxisCount: 1,
-            childAspectRatio: width/height,
+            childAspectRatio: aspectRatio,
             children: transactionList.map((BnkTransaction item){
               return _listItem(item);
             }).toList(growable: false),
           )
-        ) ,
-      ),
-    );
+        ) ;
   }
 
   Widget _listItem(BnkTransaction item){

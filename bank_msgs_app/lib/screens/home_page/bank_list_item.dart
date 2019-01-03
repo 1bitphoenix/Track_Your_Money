@@ -1,3 +1,4 @@
+import 'package:bank_msgs_app/charts/pie_chart.dart';
 import 'package:bank_msgs_app/screens/monthwise_transaction_page.dart';
 import 'package:flutter/material.dart';
 
@@ -15,7 +16,10 @@ class BankListItem extends StatelessWidget{
               MaterialPageRoute(builder: (context) => MonthWiseTransactionPage(bnkName)));
             },
       onDoubleTap: (){
-                
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(builder: (context) => PieChart(bnkName))
+                );
             },
       child: Padding(
           padding: EdgeInsets.all(10.0),
@@ -24,7 +28,7 @@ class BankListItem extends StatelessWidget{
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border.all(
-                color: Colors.teal[900],
+                color: Colors.teal[700],
                 width: 2.0,
               ),
               borderRadius: BorderRadius.only(
@@ -38,7 +42,7 @@ class BankListItem extends StatelessWidget{
                                       bnkName,
                                       style: TextStyle(
                                         fontSize: 20.0,
-                                        color: Colors.teal[900]                                    
+                                        color: Colors.teal[700]                                    
                                       ),
             ))), 
         )
