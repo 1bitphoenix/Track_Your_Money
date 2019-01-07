@@ -1,11 +1,12 @@
-import 'package:bank_msgs_app/charts/bar_chart.dart';
 import 'package:bank_msgs_app/models/bnk_transaction.dart';
 import 'package:bank_msgs_app/screens/home_page/bank_list_item.dart';
 import 'package:bank_msgs_app/utils/database_helper.dart';
-import 'package:bank_msgs_app/utils/values.dart';
 import 'package:flutter/material.dart';
 import 'package:sms/sms.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:bank_msgs_app/models/acc_transactions.dart';
+import 'package:bank_msgs_app/utils/regexp.dart' as regexp
+;
 
 class HomePage extends StatefulWidget{
   @override
@@ -58,12 +59,7 @@ class HomePageState extends State<HomePage>{
           actions: <Widget>[
              IconButton(
                icon: Icon(Icons.receipt),
-               onPressed: (){
-                //  Navigator.push(
-                //    context, 
-                //    MaterialPageRoute(builder: (context) => SimpleBarChart())
-                //   );
-               },
+               onPressed: (){},
                tooltip: "Report Chart",
              )
           ],
@@ -78,7 +74,7 @@ class HomePageState extends State<HomePage>{
                     setState(() {              
                       _loading = true; 
                     });
-                    _query.querySms(kinds: [SmsQueryKind.Inbox]).then(_getMsgs);
+                    _query.querySms({'kind': [SmsQueryKind.Inbox]}).then(_getMsgs);
                  });
           },
         ),
@@ -98,7 +94,7 @@ class HomePageState extends State<HomePage>{
         child: Container(
           padding: EdgeInsets.all(16),
           child: Text(
-            "Looks Like, its empty here \n Click Refresh button to scan Transaction",
+            "Looks Like, it\'s empty here \n Click Refresh button to scan Transaction",
             softWrap: true,
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -155,126 +151,91 @@ class HomePageState extends State<HomePage>{
         bnkMsgsMap['AXIS'].add(msg);
       }
     }
-    makingTransactionObjects();
+    addingToDB();
   }
 
-  void makingTransactionObjects(){
-    bnkMsgsMap.forEach((bnkName, msgs) async {     
+  Map<String,AccTransactions> accMap ;
+  void addingToDB(){
+    bnkMsgsMap.forEach((bnkName, msgs){
+      accMap = Map();
+      if (msgs.length != 0) {
+        msgs.forEach((msg){
+          if (regexp.accNo.hasMatch(msg.body)) {
 
-      if(msgs.length != 0){
-        print(msgs.length);
-      
-      var month1 = DateTime.now().month;
-      var month2 = previousMonth(month1);
-      var month3 = previousMonth(month2);
-      var year1 = DateTime.now().year;
-      var year2 = whichYear(year1, month1);
-      var year3 = whichYear(year2, month2);
-      double creditedAmt1 = 0;
-      double creditedAmt2 = 0;
-      double creditedAmt3 = 0;
-      double debitedAmt1 = 0;
-      double debitedAmt3 = 0;
-      double debitedAmt2 = 0;
-      
-      RegExp expForCredit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*.*CREDITED", caseSensitive: false);
-      RegExp expForCredit2 = RegExp(r"CREDITED.*(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*", caseSensitive: false);
-      RegExp expForDebit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*.*DEBITED", caseSensitive: false);
-      RegExp expForDebit2 = RegExp(r"DEBITED.*(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*", caseSensitive: false);
-      RegExp expForDeposit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*.*DEPOSTED", caseSensitive: false);
-      RegExp expForDeposit2 = RegExp(r"DEPOSITED.*(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*", caseSensitive: false);
-      msgs.forEach((msg){
-        if (expForCredit1.firstMatch(msg.body) != null) {
-          var string = expForCredit1.stringMatch(msg.body);
-          if (msg.date.month == month1) {
+            String accNo = "XXXX" + getAccNo(msg.body);
 
-            creditedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == month2){
-            creditedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == month3) {
-            creditedAmt3 += _getAmountFromString(string);
+            if (!accMap.containsKey(accNo)) {
+              accMap[accNo] = AccTransactions(accNo);
+              debugPrint(accNo);
+            }
+
+            if (regexp.credit1.hasMatch(msg.body)) {
+              String string = regexp.credit1.stringMatch(msg.body);
+              getCreditAmts(accMap[accNo], msg.date.month, string);
+            } 
+            else if (regexp.deposit1.hasMatch(msg.body)) {
+              String string = regexp.deposit1.stringMatch(msg.body);
+              getCreditAmts(accMap[accNo], msg.date.month,string);
+            }
+            else if (regexp.credit2.hasMatch(msg.body)) {
+              String string = regexp.credit2.stringMatch(msg.body);
+              getCreditAmts(accMap[accNo], msg.date.month, string);
+            }
+            else if (regexp.deposit2.hasMatch(msg.body)) {
+              String string = regexp.deposit2.stringMatch(msg.body);
+              getCreditAmts(accMap[accNo], msg.date.month, string);
+            }
+            else if (regexp.debit1.hasMatch(msg.body)) {
+              String string = regexp.debit1.stringMatch(msg.body);
+              getDebitAmts(accMap[accNo], msg.date.month, string);
+            } 
+            else if(regexp.debit2.hasMatch(msg.body)){
+              String string = regexp.debit2.stringMatch(msg.body);
+              getDebitAmts(accMap[accNo], msg.date.month, string);
+            }
           }
-        }
-        else if (expForCredit2.firstMatch(msg.body) != null) {
-          var string = expForCredit2.stringMatch(msg.body);
-          if (msg.date.month == month1) {
-            creditedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == month2){
-            creditedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == month3) {
-            creditedAmt3 += _getAmountFromString(string);
-          }          
-        }
-        else if (expForDebit1.firstMatch(msg.body) != null) {
-          var string = expForDebit1.stringMatch(msg.body);
-          if (msg.date.month == month1) {
-            debitedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == month2){
-            debitedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == month3) {
-            debitedAmt3 += _getAmountFromString(string);
-          }          
-        }
-        else if (expForDebit2.firstMatch(msg.body) != null) {
-          var string = expForDebit2.stringMatch(msg.body);
-          if (msg.date.month == month1) {
-            debitedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == month2){
-            debitedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == month3) {
-            debitedAmt3 += _getAmountFromString(string);
-          }          
-        }
-        else if (expForDeposit1.firstMatch(msg.body) != null) {
-          var string = expForDeposit1.stringMatch(msg.body);
-          if (msg.date.month == month1) {
-            creditedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == month2){
-            creditedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == month3) {
-            creditedAmt3 += _getAmountFromString(string);
-          }          
-        }
-        else if (expForDeposit2.firstMatch(msg.body) != null) {
-          var string = expForDeposit2.stringMatch(msg.body);
-          if (msg.date.month == month1) {
-            creditedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == month2){
-            creditedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == month3) {
-            creditedAmt3 += _getAmountFromString(string);
-          }          
-        }
-      });
-
-      debitedAmt1 = num.parse(debitedAmt1.toStringAsPrecision(2));
-      debitedAmt2 = num.parse(debitedAmt2.toStringAsPrecision(2));
-      debitedAmt3 = num.parse(debitedAmt3.toStringAsPrecision(2));
-      creditedAmt1 = num.parse(creditedAmt1.toStringAsPrecision(2));
-      creditedAmt2 = num.parse(creditedAmt2.toStringAsPrecision(2));
-      creditedAmt3 = num.parse(creditedAmt3.toStringAsPrecision(2));
-      
-
-      BnkTransaction transMonth1 = BnkTransaction(bnkName,month1, year1, debitedAmt1, creditedAmt1);
-      BnkTransaction transMonth2 = BnkTransaction(bnkName,month2, year2, debitedAmt2, creditedAmt2);
-      BnkTransaction transMonth3 = BnkTransaction(bnkName,month3, year3, debitedAmt3, creditedAmt3);
+        });
+      }
+      accMap.forEach((accNo, acc){
+        BnkTransaction transMonth1 = BnkTransaction(bnkName,accNo,acc.month1,acc.year1,acc.debitedAmt1,acc.creditedAmt1);
+        BnkTransaction transMonth2 = BnkTransaction(bnkName,accNo,acc.month2,acc.year2,acc.debitedAmt2,acc.creditedAmt2);
+        BnkTransaction transMonth3 = BnkTransaction(bnkName,accNo,acc.month3,acc.year3,acc.debitedAmt3,acc.creditedAmt3);
         
-      _databaseHelper.insert(transMonth1);
-      _databaseHelper.insert(transMonth2);
-      _databaseHelper.insert(transMonth3);
-        debugPrint(transMonth1.month.toString());
-        debugPrint(transMonth2.month.toString());
-        debugPrint(transMonth3.month.toString());
-      
-    }
+        _databaseHelper.insert(transMonth1);
+        _databaseHelper.insert(transMonth2);
+        _databaseHelper.insert(transMonth3);
+      });
     });
     updateBankList();
   }
-
-  double _getAmountFromString(String string){
-    RegExp exp = new RegExp(r"\d+\.*\d*");
-    double amount = double.parse(exp.stringMatch(string));
-    return amount;
+  void getCreditAmts(AccTransactions account, int month, String string){
+    if (month == account.month1) {
+      account.creditedAmt1 += _getAmountFromString(string); 
+    } else if(month == account.month2){
+      account.creditedAmt2 += _getAmountFromString(string);
+    } else if (month == account.month3) {
+      account.creditedAmt3 += _getAmountFromString(string);
+    }
+  }
+  void getDebitAmts(AccTransactions account, int month, String string){
+    if (month == account.month1) {
+      account.debitedAmt1 += _getAmountFromString(string); 
+    } else if(month == account.month2){
+      account.debitedAmt2 += _getAmountFromString(string);
+    } else if (month == account.month3) {
+      account.debitedAmt3 += _getAmountFromString(string);
+    }
+  }
+  String getAccNo(String msg){
+      var accNo = regexp.accNo.stringMatch(msg);
+      RegExp exp = RegExp(r"\d*(X|\*)*\d\d\d\d");
+      return exp.stringMatch(accNo);
   }
 
+  double _getAmountFromString(String string){
+    RegExp exp = RegExp(r"\d+\.*\d*");
+    double amount = double.parse(exp.stringMatch(string));
+    amount = double.parse(amount.toStringAsPrecision(2));
+    return amount;
+  }
 }

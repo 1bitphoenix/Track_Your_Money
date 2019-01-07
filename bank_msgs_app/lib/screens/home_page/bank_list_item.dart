@@ -11,6 +11,7 @@ class BankListItem extends StatelessWidget{
   Widget build(BuildContext context){
     return GestureDetector(
       onTap: (){
+        debugPrint("hello");
             Navigator.push(
               context, 
               MaterialPageRoute(builder: (context) => MonthWiseTransactionPage(bnkName)));

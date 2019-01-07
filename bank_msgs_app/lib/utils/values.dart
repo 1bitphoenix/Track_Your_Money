@@ -21,14 +21,10 @@ Map bnkAddressMap = {
   'AXIS': 'AxisBk'
 };
 
-var numOfResultMonths = 3;
-
-var totalMonthsInYear = 12;
-
 int previousMonth(int month){
   int _previousMonth = month - 1;
   if(_previousMonth == 0){
-    return totalMonthsInYear;
+    return 12;
   }
   return _previousMonth;
 }

@@ -20,6 +20,7 @@ class DatabaseHelper{
 
   String tableName = "bnk_transactions";
   String colBank = "bank";
+  String colAcc = "account_no";
   String colMonth = "month";
   String colYear = "year";
   String colDebitedAmt = "debited_amt";
@@ -46,11 +47,12 @@ class DatabaseHelper{
     await db.execute(
     '''CREATE TABLE $tableName(
       $colBank TEXT,
+      $colAcc TEXT,
       $colMonth INTEGER, 
       $colYear INTEGER,
       $colDebitedAmt REAL, 
       $colCreditedAmt REAL,
-      PRIMARY KEY ($colBank,$colMonth))
+      PRIMARY KEY ($colBank,$colAcc,$colMonth))
     '''.replaceAll('\n', ' ')
     );
   }
