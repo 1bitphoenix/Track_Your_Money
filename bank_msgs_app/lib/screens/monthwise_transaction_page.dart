@@ -32,6 +32,9 @@ class MonthWiseTransactionPageState extends State<MonthWiseTransactionPage>{
         setState(() {
           transactionList = bnkTransactionList;
           count = bnkTransactionList.length;
+          debugPrint(transactionList[0].month.toString());
+          debugPrint(transactionList[1].month.toString());
+          debugPrint(transactionList[2].month.toString());
           _loading = false;
         });
       });

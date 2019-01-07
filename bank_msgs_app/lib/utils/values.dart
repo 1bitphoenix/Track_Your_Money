@@ -32,15 +32,9 @@ int previousMonth(int month){
   }
   return _previousMonth;
 }
-
-// bnkMsgsMap.keys.forEach((key){
-//       print(bnkAddressMap[key]);
-//       Future<List<SmsMessage>> msgsFuture = SmsQuery().querySms(
-//                                                       {'kind': [SmsQueryKind.Inbox]},
-//                                                       address: bnkAddressMap[key]
-//                                                     );
-//       msgsFuture.then((messages){
-//         bnkMsgsMap[key] = messages;
-//         print(messages);
-//       });
-//     });
+int whichYear(int year, int month){
+  if (month - 1 == 0) {
+    return year - 1;
+  }
+  return year;
+}

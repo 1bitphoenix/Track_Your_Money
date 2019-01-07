@@ -1,3 +1,4 @@
+import 'package:bank_msgs_app/charts/bar_chart.dart';
 import 'package:bank_msgs_app/models/bnk_transaction.dart';
 import 'package:bank_msgs_app/screens/home_page/bank_list_item.dart';
 import 'package:bank_msgs_app/utils/database_helper.dart';
@@ -52,12 +53,17 @@ class HomePageState extends State<HomePage>{
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Bank Messages'),
+          title: Text('My Accounts'),
           backgroundColor: Colors.teal[700],
           actions: <Widget>[
              IconButton(
                icon: Icon(Icons.receipt),
-               onPressed: (){},
+               onPressed: (){
+                //  Navigator.push(
+                //    context, 
+                //    MaterialPageRoute(builder: (context) => SimpleBarChart())
+                //   );
+               },
                tooltip: "Report Chart",
              )
           ],
@@ -72,7 +78,7 @@ class HomePageState extends State<HomePage>{
                     setState(() {              
                       _loading = true; 
                     });
-                    _query.querySms({'kind': [SmsQueryKind.Inbox]}).then(_getMsgs);
+                    _query.querySms(kinds: [SmsQueryKind.Inbox]).then(_getMsgs);
                  });
           },
         ),
@@ -158,10 +164,12 @@ class HomePageState extends State<HomePage>{
       if(msgs.length != 0){
         print(msgs.length);
       
-      var currentMonth = DateTime.now().month;
-      var prevMonth1 = previousMonth(currentMonth);
-      var prevMonth2 = previousMonth(prevMonth1);
-      var prevMonth3 = previousMonth(prevMonth2);
+      var month1 = DateTime.now().month;
+      var month2 = previousMonth(month1);
+      var month3 = previousMonth(month2);
+      var year1 = DateTime.now().year;
+      var year2 = whichYear(year1, month1);
+      var year3 = whichYear(year2, month2);
       double creditedAmt1 = 0;
       double creditedAmt2 = 0;
       double creditedAmt3 = 0;
@@ -169,7 +177,6 @@ class HomePageState extends State<HomePage>{
       double debitedAmt3 = 0;
       double debitedAmt2 = 0;
       
-      int i = 0;
       RegExp expForCredit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*.*CREDITED", caseSensitive: false);
       RegExp expForCredit2 = RegExp(r"CREDITED.*(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*", caseSensitive: false);
       RegExp expForDebit1 = RegExp(r"(INR|INR |Rs\.|Rs\. |Rs|Rs )\d+\.*\d*.*DEBITED", caseSensitive: false);
@@ -179,74 +186,85 @@ class HomePageState extends State<HomePage>{
       msgs.forEach((msg){
         if (expForCredit1.firstMatch(msg.body) != null) {
           var string = expForCredit1.stringMatch(msg.body);
-          if (msg.date.month == prevMonth1) {
+          if (msg.date.month == month1) {
+
             creditedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == prevMonth2){
+          }else if(msg.date.month == month2){
             creditedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == prevMonth3) {
+          }else if (msg.date.month == month3) {
             creditedAmt3 += _getAmountFromString(string);
           }
         }
         else if (expForCredit2.firstMatch(msg.body) != null) {
           var string = expForCredit2.stringMatch(msg.body);
-          if (msg.date.month == prevMonth1) {
+          if (msg.date.month == month1) {
             creditedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == prevMonth2){
+          }else if(msg.date.month == month2){
             creditedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == prevMonth3) {
+          }else if (msg.date.month == month3) {
             creditedAmt3 += _getAmountFromString(string);
           }          
         }
         else if (expForDebit1.firstMatch(msg.body) != null) {
           var string = expForDebit1.stringMatch(msg.body);
-          if (msg.date.month == prevMonth1) {
+          if (msg.date.month == month1) {
             debitedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == prevMonth2){
+          }else if(msg.date.month == month2){
             debitedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == prevMonth3) {
+          }else if (msg.date.month == month3) {
             debitedAmt3 += _getAmountFromString(string);
           }          
         }
         else if (expForDebit2.firstMatch(msg.body) != null) {
           var string = expForDebit2.stringMatch(msg.body);
-          if (msg.date.month == prevMonth1) {
+          if (msg.date.month == month1) {
             debitedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == prevMonth2){
+          }else if(msg.date.month == month2){
             debitedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == prevMonth3) {
+          }else if (msg.date.month == month3) {
             debitedAmt3 += _getAmountFromString(string);
           }          
         }
         else if (expForDeposit1.firstMatch(msg.body) != null) {
           var string = expForDeposit1.stringMatch(msg.body);
-          if (msg.date.month == prevMonth1) {
+          if (msg.date.month == month1) {
             creditedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == prevMonth2){
+          }else if(msg.date.month == month2){
             creditedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == prevMonth3) {
+          }else if (msg.date.month == month3) {
             creditedAmt3 += _getAmountFromString(string);
           }          
         }
         else if (expForDeposit2.firstMatch(msg.body) != null) {
           var string = expForDeposit2.stringMatch(msg.body);
-          if (msg.date.month == prevMonth1) {
+          if (msg.date.month == month1) {
             creditedAmt1 += _getAmountFromString(string);
-          }else if(msg.date.month == prevMonth2){
+          }else if(msg.date.month == month2){
             creditedAmt2 += _getAmountFromString(string);
-          }else if (msg.date.month == prevMonth3) {
+          }else if (msg.date.month == month3) {
             creditedAmt3 += _getAmountFromString(string);
           }          
         }
-        // print("$i : $creditedAmt1 , $debitedAmt1");
-        print(msg.body);
       });
-        BnkTransaction transMonth1 = BnkTransaction(bnkName,prevMonth1, debitedAmt1, creditedAmt1);
-        BnkTransaction transMonth2 = BnkTransaction(bnkName,prevMonth2, debitedAmt2, creditedAmt2);
-        BnkTransaction transMonth3 = BnkTransaction(bnkName,prevMonth3, debitedAmt3, creditedAmt3);
+
+      debitedAmt1 = num.parse(debitedAmt1.toStringAsPrecision(2));
+      debitedAmt2 = num.parse(debitedAmt2.toStringAsPrecision(2));
+      debitedAmt3 = num.parse(debitedAmt3.toStringAsPrecision(2));
+      creditedAmt1 = num.parse(creditedAmt1.toStringAsPrecision(2));
+      creditedAmt2 = num.parse(creditedAmt2.toStringAsPrecision(2));
+      creditedAmt3 = num.parse(creditedAmt3.toStringAsPrecision(2));
+      
+
+      BnkTransaction transMonth1 = BnkTransaction(bnkName,month1, year1, debitedAmt1, creditedAmt1);
+      BnkTransaction transMonth2 = BnkTransaction(bnkName,month2, year2, debitedAmt2, creditedAmt2);
+      BnkTransaction transMonth3 = BnkTransaction(bnkName,month3, year3, debitedAmt3, creditedAmt3);
         
-        _databaseHelper.insert(transMonth1);
-        _databaseHelper.insert(transMonth2);
-        _databaseHelper.insert(transMonth3);
+      _databaseHelper.insert(transMonth1);
+      _databaseHelper.insert(transMonth2);
+      _databaseHelper.insert(transMonth3);
+        debugPrint(transMonth1.month.toString());
+        debugPrint(transMonth2.month.toString());
+        debugPrint(transMonth3.month.toString());
       
     }
     });

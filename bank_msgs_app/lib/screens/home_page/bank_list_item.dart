@@ -16,7 +16,7 @@ class BankListItem extends StatelessWidget{
               MaterialPageRoute(builder: (context) => MonthWiseTransactionPage(bnkName)));
             },
       onDoubleTap: (){
-                Navigator.push(
+                Navigator.push( 
                   context, 
                   MaterialPageRoute(builder: (context) => PieChart(bnkName))
                 );

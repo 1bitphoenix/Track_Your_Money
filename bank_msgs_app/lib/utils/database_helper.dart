@@ -21,6 +21,7 @@ class DatabaseHelper{
   String tableName = "bnk_transactions";
   String colBank = "bank";
   String colMonth = "month";
+  String colYear = "year";
   String colDebitedAmt = "debited_amt";
   String colCreditedAmt = "credited_amt";
 
@@ -46,6 +47,7 @@ class DatabaseHelper{
     '''CREATE TABLE $tableName(
       $colBank TEXT,
       $colMonth INTEGER, 
+      $colYear INTEGER,
       $colDebitedAmt REAL, 
       $colCreditedAmt REAL,
       PRIMARY KEY ($colBank,$colMonth))
@@ -86,7 +88,7 @@ class DatabaseHelper{
       List<String> args = List();
       args.add(bnkName);
       Database db = await this.database;
-      var result = await db.query(tableName, where: '$colBank = ?', whereArgs: args, orderBy: '$colMonth DESC');
+      var result = await db.query(tableName, where: '$colBank = ?', whereArgs: args, orderBy: '$colYear DESC, $colMonth DESC');
       return result;
     }
     //get maplist from above function and convert into BnkTrasaction List

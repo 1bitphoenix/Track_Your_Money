@@ -89,6 +89,7 @@ class PermissionPageState extends State<PermissionPage> {
     AssetImage image = AssetImage('assets/images/money.png');
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         backgroundColor: Colors.white,
         body: Align(

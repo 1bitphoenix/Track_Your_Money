@@ -46,12 +46,11 @@ class _PieChartState extends State<PieChart> {
     });
   }
 
-  Color debitColor = Colors.yellowAccent[100];
-  Color creditColor = Colors.blue[200];
-
   void setmonthyTransactionPieData(){
     _monthyTransactionPieData = List();
     transactionList.forEach((item){
+      Color debitColor = Colors.yellowAccent[100];
+      Color creditColor = Colors.blue[200];
       double debit = item.debitedAmt;
       double credit = item.creditedAmt;
       if (item.debitedAmt == 0) {
