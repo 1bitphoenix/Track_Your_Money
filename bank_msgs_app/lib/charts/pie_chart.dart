@@ -48,6 +48,7 @@ class _PieChartState extends State<PieChart> {
 
   void setmonthyTransactionPieData(){
     _monthyTransactionPieData = List();
+    
     transactionList.forEach((item){
       Color debitColor = Colors.yellowAccent[100];
       Color creditColor = Colors.blue[200];

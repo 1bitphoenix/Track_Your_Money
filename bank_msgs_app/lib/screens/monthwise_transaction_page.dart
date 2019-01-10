@@ -19,8 +19,7 @@ class MonthWiseTransactionPageState extends State<MonthWiseTransactionPage>{
   DatabaseHelper _databaseHelper = DatabaseHelper();
   bool _loading = true;
 
-  Map<String, List<BnkTransaction>> transactionMap;
-  List<String> accountList = List();
+  List<BnkTransaction> transactionList;
   int count;
 
   void updateList(){
@@ -31,15 +30,8 @@ class MonthWiseTransactionPageState extends State<MonthWiseTransactionPage>{
                                                                   getBnkTransactionListPerBank(bnkName);
       bnkTransactionListFuture.then((bnkTransactionList){
         setState(() {
-          bnkTransactionList.forEach((item){
-            if (transactionMap[item.accountNo] == null) {
-              accountList.add(item.accountNo);
-              transactionMap[item.accountNo] = List();
-            }
-            transactionMap[item.accountNo].add(item);
-          });
-          
-          count = accountList.length;
+          transactionList = bnkTransactionList;
+          count = bnkTransactionList.length;
           _loading = false;
         });
       });
@@ -51,8 +43,8 @@ class MonthWiseTransactionPageState extends State<MonthWiseTransactionPage>{
 
   @override
   Widget build(BuildContext context){
-    if(transactionMap == null){
-      transactionMap = Map();
+    if(transactionList == null){
+      transactionList = List();
       updateList();
     }
 
@@ -88,44 +80,12 @@ class MonthWiseTransactionPageState extends State<MonthWiseTransactionPage>{
     return Container(
           child: GridView.count(
             crossAxisCount: 1,
-            scrollDirection: Axis.vertical,
-            children: accountList.map((account){
-              return _accountWidget(account);
-            }).toList(growable: false)
+            childAspectRatio: aspectRatio,
+            children: transactionList.map((BnkTransaction item){
+              return _listItem(item);
+            }).toList(growable: false),
           )
         ) ;
-  }
-
-  Widget _accountWidget(String account){
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(left: 10.0),
-              child: Text(
-                "For: " + account,
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.teal[700],
-                ),
-              )
-            ),
-            
-          ]
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: transactionMap[account].map((item){
-            return _listItem(item);
-          }).toList(growable: false),
-        )
-      ],
-    );
   }
 
   Widget _listItem(BnkTransaction item){
@@ -162,7 +122,7 @@ class MonthWiseTransactionPageState extends State<MonthWiseTransactionPage>{
           child: Text(
             month,
             style: TextStyle(
-              fontSize: 16.0,
+              fontSize: 15.0,
               fontWeight: FontWeight.bold,
               color: Colors.teal[900]
             ),

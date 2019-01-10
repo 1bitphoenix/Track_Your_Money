@@ -1,4 +1,4 @@
-Map monthMap = {
+Map<int,String> monthMap = {
   1: 'January', 
   2: 'February',
   3: 'March',
@@ -28,8 +28,8 @@ int previousMonth(int month){
   }
   return _previousMonth;
 }
-int whichYear(int year, int month){
-  if (month - 1 == 0) {
+int whichYear(int year, int prevMonth){
+  if (prevMonth - 1 == 0) {
     return year - 1;
   }
   return year;
